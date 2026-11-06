@@ -1,0 +1,87 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Theme tokens as "R G B" so Tailwind opacity modifiers work. */
+@layer base {
+  :root {
+    color-scheme: light;
+    --primary: 23 107 99;
+    --primary-hover: 18 86 79;
+    --primary-foreground: 255 255 255;
+    --sage: 220 235 229;
+    --sage-light: 237 245 241;
+    --sage-hover: 207 226 218;
+    --background: 244 246 248;
+    --card: 255 255 255;
+    --accent: 229 139 117;
+    --accent-hover: 217 122 99;
+    --accent-soft: 251 227 220;
+    --accent-faint: 253 244 240;
+    --accent-deep: 185 86 63;
+    --mist: 232 238 245;
+    --mist-ring: 211 221 234;
+    --mist-light: 243 246 250;
+    --mist-deep: 68 89 122;
+    --ink: 38 50 56;
+    --muted: 120 133 140;
+    --line: 227 232 236;
+    --edge: 218 225 233;
+    --danger: 194 73 58;
+    --danger-hover: 169 61 48;
+    --danger-soft: 251 233 231;
+    --sidebar-from: 23 107 99;
+    --sidebar-to: 15 76 70;
+    --shadow: 38 50 56;
+  }
+
+  .dark {
+    color-scheme: dark;
+    --primary: 42 154 140;
+    --primary-hover: 52 172 157;
+    --primary-foreground: 255 255 255;
+    --sage: 29 51 48;
+    --sage-light: 23 40 38;
+    --sage-hover: 36 64 60;
+    --background: 11 16 19;
+    --card: 31 40 46;
+    --accent: 229 139 117;
+    --accent-hover: 238 156 135;
+    --accent-soft: 64 38 32;
+    --accent-faint: 42 29 26;
+    --accent-deep: 240 165 146;
+    --mist: 19 27 33;
+    --mist-ring: 37 50 62;
+    --mist-light: 26 36 43;
+    --mist-deep: 160 180 208;
+    --ink: 228 236 234;
+    --muted: 145 160 158;
+    --line: 41 51 56;
+    --edge: 52 65 74;
+    --danger: 230 112 98;
+    --danger-hover: 240 132 118;
+    --danger-soft: 62 32 29;
+    --sidebar-from: 15 46 43;
+    --sidebar-to: 9 28 26;
+    --shadow: 0 0 0;
+  }
+
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-background font-sans text-ink antialiased;
+    overflow-x: hidden;
+  }
+  input[type="date"] {
+    text-align: right;
+  }
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.55;
+  }
+  ::selection {
+    background: rgb(var(--sage));
+    color: rgb(var(--primary));
+  }
+}
