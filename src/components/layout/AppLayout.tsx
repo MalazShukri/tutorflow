@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
-import { FlaskConical, GraduationCap, History, LogOut, Menu, NotebookPen, Settings, Users, X } from "lucide-react";
+import { CalendarDays, FlaskConical, GraduationCap, History, LogOut, Menu, NotebookPen, Settings, Users, X } from "lucide-react";
 import { auth, useAuth } from "@/hooks/auth";
 import { ThemeToggle } from "@/hooks/theme";
 import { isDemoMode } from "@/lib/backend";
@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const NAV = [
-  { to: "/", label: "الطلاب", icon: Users, end: false },
+  { to: "/", label: "جدول اليوم", icon: CalendarDays, end: true },
+  { to: "/students", label: "الطلاب", icon: Users },
   { to: "/lessons", label: "سجل الدروس", icon: History },
   { to: "/settings", label: "الإعدادات", icon: Settings },
 ];
@@ -47,7 +48,7 @@ function NavItems({ onNavigate }: { onNavigate?: () => void }) {
           className={({ isActive }) =>
             cn(
               "relative flex h-11 items-center gap-3 rounded-xl px-3 text-[15px] font-medium transition-colors",
-              (to === "/" ? !/^\/(lessons|settings)/.test(location.pathname) : isActive)
+              (to === "/students" ? /^\/(students|progress)/.test(location.pathname) : isActive)
                 ? "bg-white text-[#176B63] shadow-sm before:absolute before:inset-y-2.5 before:-start-4 before:w-1 before:rounded-e-full before:bg-accent"
                 : "text-white/75 hover:bg-white/10 hover:text-white",
             )

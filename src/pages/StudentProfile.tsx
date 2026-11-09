@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   BookOpen,
   BookPlus,
+  CalendarDays,
   GraduationCap,
   History,
   MapPin,
@@ -22,7 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/dialog";
 import { Avatar, EmptyState, ErrorState, Skeleton } from "@/components/ui/misc";
-import { cn } from "@/lib/utils";
+import { cn, formatDays } from "@/lib/utils";
 import { useDeleteStudent, useLessons, useStudent, useStudentSubjects } from "@/lib/api";
 
 export default function StudentProfilePage() {
@@ -57,7 +58,7 @@ export default function StudentProfilePage() {
           title="الطالب غير موجود"
           description="ربما تم حذف هذا الطالب."
           action={
-            <Button variant="secondary" onClick={() => navigate("/")}>
+            <Button variant="secondary" onClick={() => navigate("/students")}>
               العودة إلى الطلاب
             </Button>
           }
@@ -71,7 +72,7 @@ export default function StudentProfilePage() {
   return (
     <>
       <PageHeader
-        back={<BackLink to="/" label="الطلاب" />}
+        back={<BackLink to="/students" label="الطلاب" />}
         title={
           <span className="flex items-center gap-3">
             <Avatar name={s.name} className="size-12 text-base" />
@@ -101,6 +102,7 @@ export default function StudentProfilePage() {
           <Info icon={<GraduationCap />} label="الصف" value={s.grade} />
           <Info icon={<Phone />} label="رقم الهاتف" value={s.guardian_phone} ltr />
           <Info icon={<MapPin />} label="العنوان" value={s.address} />
+          <Info icon={<CalendarDays />} label="أيام الدروس" value={formatDays(s.lesson_days ?? []) || null} wide />
           {s.notes && <Info icon={<StickyNote />} label="ملاحظات عامة" value={s.notes} note />}
         </div>
       </Section>
@@ -188,7 +190,7 @@ export default function StudentProfilePage() {
           del.mutate(s.id, {
             onSuccess: () => {
               setConfirm(false);
-              navigate("/", { replace: true });
+              navigate("/students", { replace: true });
             },
           })
         }
@@ -202,12 +204,15 @@ function Info({
   label,
   value,
   ltr,
+  wide,
   note,
 }: {
   icon: ReactNode;
   label: string;
   value: string | null;
   ltr?: boolean;
+  /** Spans the whole row. */
+  wide?: boolean;
   /** Full-width, coral-accented card for free text. */
   note?: boolean;
 }) {
@@ -215,6 +220,7 @@ function Info({
     <div
       className={cn(
         "flex min-w-0 items-start gap-3 rounded-2xl p-4 shadow-card ring-1",
+        wide && "sm:col-span-3",
         note ? "bg-accent-faint ring-accent-soft sm:col-span-3" : "bg-card ring-mist-ring/60",
       )}
     >

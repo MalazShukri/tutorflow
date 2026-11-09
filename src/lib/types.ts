@@ -18,6 +18,8 @@ export interface Student {
   address: string | null;
   guardian_phone: string | null;
   notes: string | null;
+  /** Weekdays with a private lesson, JS numbering: 0 = Sunday … 6 = Saturday. */
+  lesson_days: number[];
   created_at: string;
   updated_at: string;
 }

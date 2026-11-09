@@ -76,3 +76,23 @@ export function arabicError(error: unknown): string {
   if (/JWT|session/i.test(msg)) return "انتهت الجلسة. يرجى تسجيل الدخول من جديد.";
   return "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.";
 }
+
+/** Week as shown in the app, Saturday first. `day` uses JS numbering (0 = Sunday). */
+export const WEEKDAYS = [
+  { day: 6, label: "السبت" },
+  { day: 0, label: "الأحد" },
+  { day: 1, label: "الاثنين" },
+  { day: 2, label: "الثلاثاء" },
+  { day: 3, label: "الأربعاء" },
+  { day: 4, label: "الخميس" },
+  { day: 5, label: "الجمعة" },
+];
+
+export function dayLabel(day: number) {
+  return WEEKDAYS.find((w) => w.day === day)?.label ?? "";
+}
+
+/** Lesson days sorted in week order, as Arabic names. */
+export function formatDays(days: number[]) {
+  return WEEKDAYS.filter((w) => days.includes(w.day)).map((w) => w.label).join("، ");
+}

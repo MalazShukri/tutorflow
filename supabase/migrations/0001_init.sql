@@ -47,6 +47,8 @@ create table public.students (
   address         text check (address is null or length(address) <= 300),
   guardian_phone  text check (guardian_phone is null or guardian_phone ~ '^[0-9+()\-\s]{4,25}$'),
   notes           text check (notes is null or length(notes) <= 2000),
+  -- Weekdays with a private lesson: 0 = Sunday … 6 = Saturday.
+  lesson_days     smallint[] not null default '{}' check (lesson_days <@ array[0,1,2,3,4,5,6]::smallint[]),
   created_at      timestamptz not null default now(),
   updated_at      timestamptz not null default now()
 );

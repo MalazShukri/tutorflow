@@ -6,7 +6,7 @@
 import type { Backend, LessonFilters, LessonInput, ProgressInput, StudentInput } from "./backend";
 import type { Grade, Lesson, LessonWithRefs, Student, StudentSubject, StudentSubjectWithRefs, Subject } from "./types";
 
-const STORAGE_KEY = "tutorflow-demo-v2";
+const STORAGE_KEY = "tutorflow-demo-v3";
 
 interface Store {
   students: Student[];
@@ -110,15 +110,15 @@ function seed(): Store {
   const subjects: Subject[] = SUBJECTS.map((name, i) => ({ id: uid(), name, is_default: i === 0, created_at: tsDaysAgo(90, i) }));
   const subjectId = (name: string) => subjects.find((s) => s.name === name)!.id;
 
-  const people: { name: string; grade: string; address: string | null; phone: string | null; notes: string | null; stopped?: boolean; added: number; subjects: [string, number][] }[] = [
-    { name: "أحمد محمد العلي", grade: "الصف التاسع", address: "دمشق، المزة، شارع الجلاء", phone: "0933 123 456", notes: "يحتاج تركيزاً إضافياً في المسائل الكلامية.", added: 60, subjects: [["الرياضيات", 6], ["الفيزياء", 4], ["الكيمياء", 2]] },
-    { name: "سارة خالد حسن", grade: "الصف العاشر", address: "دمشق، المالكي", phone: "0944 222 333", notes: null, added: 52, subjects: [["الرياضيات", 10], ["اللغة الإنجليزية", 4]] },
-    { name: "يوسف علي إبراهيم", grade: "الصف الثامن", address: "دمشق، ركن الدين", phone: "0955 765 432", notes: "متفوق في الحساب الذهني.", added: 45, subjects: [["الرياضيات", 4], ["العلوم", 3]] },
-    { name: "لين عمر الشامي", grade: "الصف الثاني عشر", address: "دمشق، أبو رمانة", phone: "0988 111 222", notes: "تستعد لامتحان الشهادة الثانوية.", added: 40, subjects: [["الفيزياء", 6], ["الكيمياء", 5], ["الأحياء", 4]] },
-    { name: "محمد سامر الحلبي", grade: "الصف السابع", address: "دمشق، الميدان", phone: null, notes: null, added: 30, subjects: [["اللغة العربية", 4], ["اللغة الإنجليزية", 3]] },
-    { name: "نور هادي قاسم", grade: "الصف الحادي عشر", address: "دمشق، كفرسوسة", phone: "0932 456 789", notes: null, added: 18, subjects: [["الرياضيات", 3], ["الفيزياء", 2]] },
-    { name: "ريم فادي يوسف", grade: "الصف السادس", address: null, phone: "0966 333 444", notes: "تفضّل الدروس صباحاً.", added: 6, subjects: [["العلوم", 1]] },
-    { name: "كريم وائل منصور", grade: "الصف التاسع", address: "دمشق، الشعلان", phone: "0911 999 888", notes: "توقف مؤقتاً بسبب السفر.", stopped: true, added: 80, subjects: [["الرياضيات", 3], ["التاريخ", 2]] },
+  const people: { name: string; grade: string; address: string | null; phone: string | null; notes: string | null; days: number[]; stopped?: boolean; added: number; subjects: [string, number][] }[] = [
+    { name: "أحمد محمد العلي", grade: "الصف التاسع", address: "دمشق، المزة، شارع الجلاء", phone: "0933 123 456", notes: "يحتاج تركيزاً إضافياً في المسائل الكلامية.", days: [6, 1, 3], added: 60, subjects: [["الرياضيات", 6], ["الفيزياء", 4], ["الكيمياء", 2]] },
+    { name: "سارة خالد حسن", grade: "الصف العاشر", address: "دمشق، المالكي", phone: "0944 222 333", notes: null, days: [0, 2, 4], added: 52, subjects: [["الرياضيات", 10], ["اللغة الإنجليزية", 4]] },
+    { name: "يوسف علي إبراهيم", grade: "الصف الثامن", address: "دمشق، ركن الدين", phone: "0955 765 432", notes: "متفوق في الحساب الذهني.", days: [6, 2], added: 45, subjects: [["الرياضيات", 4], ["العلوم", 3]] },
+    { name: "لين عمر الشامي", grade: "الصف الثاني عشر", address: "دمشق، أبو رمانة", phone: "0988 111 222", notes: "تستعد لامتحان الشهادة الثانوية.", days: [0, 1, 3, 4], added: 40, subjects: [["الفيزياء", 6], ["الكيمياء", 5], ["الأحياء", 4]] },
+    { name: "محمد سامر الحلبي", grade: "الصف السابع", address: "دمشق، الميدان", phone: null, notes: null, days: [1, 4], added: 30, subjects: [["اللغة العربية", 4], ["اللغة الإنجليزية", 3]] },
+    { name: "نور هادي قاسم", grade: "الصف الحادي عشر", address: "دمشق، كفرسوسة", phone: "0932 456 789", notes: null, days: [6, 3], added: 18, subjects: [["الرياضيات", 3], ["الفيزياء", 2]] },
+    { name: "ريم فادي يوسف", grade: "الصف السادس", address: null, phone: "0966 333 444", notes: "تفضّل الدروس صباحاً.", days: [0, 2], added: 6, subjects: [["العلوم", 1]] },
+    { name: "كريم وائل منصور", grade: "الصف التاسع", address: "دمشق، الشعلان", phone: "0911 999 888", notes: "توقف مؤقتاً بسبب السفر.", days: [], stopped: true, added: 80, subjects: [["الرياضيات", 3], ["التاريخ", 2]] },
   ];
 
   const students: Student[] = [];
@@ -134,6 +134,7 @@ function seed(): Store {
       address: p.address,
       guardian_phone: p.phone,
       notes: p.notes,
+      lesson_days: p.days,
       created_at: tsDaysAgo(p.added, 12),
       updated_at: tsDaysAgo(p.added, 12),
     };
@@ -254,6 +255,7 @@ function refreshProgress(s: Store, ssId: string, touch = true) {
 function checkStudent(v: StudentInput) {
   if (!v.name.trim() || v.name.length > 120) throw new DbError("23514", "invalid name");
   if (v.guardian_phone && !/^[0-9+()\-\s]{4,25}$/.test(v.guardian_phone)) throw new DbError("23514", "invalid phone");
+  if (v.lesson_days.some((d) => !Number.isInteger(d) || d < 0 || d > 6)) throw new DbError("23514", "invalid day");
 }
 
 function checkName(name: string, list: { id: string; name: string }[], id?: string) {

@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/misc";
 import { buttonVariants } from "@/components/ui/button";
 import LoginPage from "@/pages/Login";
+import TodayPage from "@/pages/Today";
 import StudentsPage from "@/pages/Students";
 import StudentProfilePage from "@/pages/StudentProfile";
 import SubjectProgressPage from "@/pages/SubjectProgress";
@@ -54,8 +55,8 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
-            <Route index element={<StudentsPage />} />
-            <Route path="students" element={<Navigate to="/" replace />} />
+            <Route index element={<TodayPage />} />
+            <Route path="students" element={<StudentsPage />} />
             <Route path="students/:id" element={<StudentProfilePage />} />
             <Route path="progress/:id" element={<SubjectProgressPage />} />
             <Route path="lessons" element={<LessonsPage />} />

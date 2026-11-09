@@ -52,7 +52,7 @@ export default function SubjectProgressPage() {
           title="المادة غير موجودة"
           description="ربما تمت إزالة هذه المادة من الطالب."
           action={
-            <Button variant="secondary" onClick={() => navigate("/")}>
+            <Button variant="secondary" onClick={() => navigate("/students")}>
               العودة إلى الطلاب
             </Button>
           }

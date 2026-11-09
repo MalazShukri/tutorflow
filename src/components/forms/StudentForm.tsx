@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Field, Input, Select, Textarea } from "@/components/ui/field";
 import { useGrades, useSaveStudent, useSubjects, type StudentInput } from "@/lib/api";
 import type { Student } from "@/lib/types";
-import { clean } from "@/lib/utils";
+import { WEEKDAYS, clean, cn } from "@/lib/utils";
 
 const empty = { name: "", grade: "", address: "", guardian_phone: "", notes: "", subjectId: "" };
 
@@ -22,6 +22,7 @@ export function StudentFormDialog({ open, onOpenChange, student }: Props) {
   const { data: subjects = [] } = useSubjects();
   const save = useSaveStudent();
   const [form, setForm] = useState<Record<keyof typeof empty, string>>(empty);
+  const [days, setDays] = useState<number[]>([]);
   const [errors, setErrors] = useState<Partial<Record<keyof typeof empty, string>>>({});
 
   const defaultSubjectId = subjects.find((s) => s.is_default)?.id ?? "";
@@ -29,6 +30,7 @@ export function StudentFormDialog({ open, onOpenChange, student }: Props) {
   useEffect(() => {
     if (!open) return;
     setErrors({});
+    setDays(student?.lesson_days ?? []);
     setForm(
       student
         ? {
@@ -65,6 +67,7 @@ export function StudentFormDialog({ open, onOpenChange, student }: Props) {
       address: clean(form.address),
       guardian_phone: clean(form.guardian_phone),
       notes: clean(form.notes),
+      lesson_days: days,
     };
     const saved = await save
       .mutateAsync({ id: student?.id, values, subjectId: student ? undefined : form.subjectId || undefined })
@@ -144,6 +147,29 @@ export function StudentFormDialog({ open, onOpenChange, student }: Props) {
         <Field label="العنوان" htmlFor="s-address">
           <Input id="s-address" value={form.address} onChange={set("address")} placeholder="المدينة، الحي، الشارع" />
         </Field>
+        <fieldset className="sm:col-span-2">
+          <legend className="mb-1.5 text-sm font-medium text-ink">أيام الدروس</legend>
+          <div className="flex flex-wrap gap-2">
+            {WEEKDAYS.map(({ day, label }) => {
+              const on = days.includes(day);
+              return (
+                <button
+                  key={day}
+                  type="button"
+                  aria-pressed={on}
+                  onClick={() => setDays((d) => (on ? d.filter((x) => x !== day) : [...d, day]))}
+                  className={cn(
+                    "h-10 rounded-xl px-3.5 text-sm font-medium ring-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                    on ? "bg-primary text-white ring-primary" : "bg-card text-ink ring-edge hover:bg-sage",
+                  )}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+          <p className="mt-1.5 text-xs text-muted">الأيام التي تعطيه فيها درساً خصوصياً، ليظهر في جدول ذلك اليوم.</p>
+        </fieldset>
         <Field label="ملاحظات عامة" htmlFor="s-notes" className="sm:col-span-2">
           <Textarea id="s-notes" value={form.notes} onChange={set("notes")} placeholder="أي ملاحظات تخص الطالب..." />
         </Field>
