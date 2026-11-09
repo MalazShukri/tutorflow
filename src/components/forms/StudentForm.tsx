@@ -232,10 +232,12 @@ function TimeInput({ label, value, onChange }: { label: string; value: string; o
   return (
     <Input
       type="time"
+      step={60}
       dir="ltr"
       aria-label={label}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
+      // Hours and minutes only: a value with seconds would make the browser show a seconds field.
+      value={value.slice(0, 5)}
+      onChange={(e) => onChange(e.target.value.slice(0, 5))}
       className="min-w-0 cursor-pointer px-2 text-center tabular-nums [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-60 dark:[&::-webkit-calendar-picker-indicator]:invert"
     />
   );
