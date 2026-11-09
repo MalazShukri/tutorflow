@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, BookMarked, CalendarCheck, CalendarDays, CheckCircle2, MapPin, NotebookPen, Phone, Users } from "lucide-react";
+import { ArrowLeft, BookMarked, Clock, CalendarCheck, CalendarDays, CheckCircle2, MapPin, NotebookPen, Phone, Users } from "lucide-react";
 import { PageHeader, Section, SectionTitle } from "@/components/layout/AppLayout";
 import { useQuickActions } from "@/components/QuickActions";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Avatar, EmptyState, ErrorState, Skeleton } from "@/components/ui/misc";
 import { useLessons, useStudentSubjects, useStudents } from "@/lib/api";
 import type { Student, StudentSubjectWithRefs } from "@/lib/types";
-import { WEEKDAYS, cn, dayLabel, formatDate, todayISO } from "@/lib/utils";
+import { WEEKDAYS, cn, dayLabel, formatDate, formatTimeRange, todayISO } from "@/lib/utils";
 
 export default function TodayPage() {
   const { openLesson } = useQuickActions();
@@ -34,7 +34,12 @@ export default function TodayPage() {
     () =>
       (students.data ?? [])
         .filter((s) => s.lesson_days?.includes(day))
-        .sort((a, b) => a.name.localeCompare(b.name, "ar")),
+        // Earliest lesson first; students without a time go last.
+        .sort(
+          (a, b) =>
+            (a.lesson_times?.[day]?.from ?? "99").localeCompare(b.lesson_times?.[day]?.from ?? "99") ||
+            a.name.localeCompare(b.name, "ar"),
+        ),
     [students.data, day],
   );
 
@@ -125,6 +130,7 @@ export default function TodayPage() {
               <ScheduleCard
                 key={s.id}
                 student={s}
+                time={formatTimeRange(s.lesson_times?.[day])}
                 subjects={subjectsByStudent.get(s.id) ?? []}
                 done={isToday && doneToday.has(s.id)}
                 onRecord={() => openLesson({ studentId: s.id })}
@@ -139,17 +145,28 @@ export default function TodayPage() {
 
 function ScheduleCard({
   student: s,
+  time,
   subjects,
   done,
   onRecord,
 }: {
   student: Student;
+  time: string;
   subjects: StudentSubjectWithRefs[];
   done: boolean;
   onRecord: () => void;
 }) {
   return (
     <div className="flex flex-col rounded-2xl bg-card p-5 shadow-card ring-1 ring-edge">
+      <div
+        className={cn(
+          "-mx-5 -mt-5 mb-4 flex items-center gap-2 rounded-t-2xl px-5 py-2.5 text-sm font-bold",
+          time ? "bg-primary text-white" : "bg-mist-light text-muted",
+        )}
+      >
+        <Clock className="size-4 shrink-0" />
+        <span dir="rtl">{time || "لم يُحدَّد الوقت"}</span>
+      </div>
       <Link to={`/students/${s.id}`} className="group flex items-center gap-3 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
         <Avatar name={s.name} className="size-12 text-base" />
         <div className="min-w-0 flex-1">

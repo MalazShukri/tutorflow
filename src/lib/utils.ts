@@ -92,7 +92,17 @@ export function dayLabel(day: number) {
   return WEEKDAYS.find((w) => w.day === day)?.label ?? "";
 }
 
-/** Lesson days sorted in week order, as Arabic names. */
-export function formatDays(days: number[]) {
-  return WEEKDAYS.filter((w) => days.includes(w.day)).map((w) => w.label).join("، ");
+const timeFormat = new Intl.DateTimeFormat("ar-EG-u-nu-latn", { hour: "numeric", minute: "2-digit" });
+
+/** "16:30" → "4:30 م". */
+export function formatTime(value: string) {
+  const [h, m] = value.split(":").map(Number);
+  return timeFormat.format(new Date(2000, 0, 1, h, m));
+}
+
+/** "4:00 م – 5:30 م", or just one side when the other is empty. */
+export function formatTimeRange(t: { from: string | null; to: string | null } | undefined) {
+  if (!t || (!t.from && !t.to)) return "";
+  if (t.from && t.to) return `${formatTime(t.from)} – ${formatTime(t.to)}`;
+  return t.from ? `من ${formatTime(t.from)}` : `حتى ${formatTime(t.to!)}`;
 }

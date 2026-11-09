@@ -1,11 +1,11 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { UserPlus, UserPen } from "lucide-react";
+import { Clock, UserPlus, UserPen } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Dialog } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Select, Textarea } from "@/components/ui/field";
 import { useGrades, useSaveStudent, useSubjects, type StudentInput } from "@/lib/api";
-import type { Student } from "@/lib/types";
+import type { LessonTime, Student } from "@/lib/types";
 import { WEEKDAYS, clean, cn } from "@/lib/utils";
 
 const empty = { name: "", grade: "", address: "", guardian_phone: "", notes: "", subjectId: "" };
@@ -23,6 +23,8 @@ export function StudentFormDialog({ open, onOpenChange, student }: Props) {
   const save = useSaveStudent();
   const [form, setForm] = useState<Record<keyof typeof empty, string>>(empty);
   const [days, setDays] = useState<number[]>([]);
+  const [times, setTimes] = useState<Record<string, LessonTime>>({});
+  const [timeError, setTimeError] = useState("");
   const [errors, setErrors] = useState<Partial<Record<keyof typeof empty, string>>>({});
 
   const defaultSubjectId = subjects.find((s) => s.is_default)?.id ?? "";
@@ -31,6 +33,8 @@ export function StudentFormDialog({ open, onOpenChange, student }: Props) {
     if (!open) return;
     setErrors({});
     setDays(student?.lesson_days ?? []);
+    setTimes(student?.lesson_times ?? {});
+    setTimeError("");
     setForm(
       student
         ? {
@@ -54,8 +58,13 @@ export function StudentFormDialog({ open, onOpenChange, student }: Props) {
     else if (form.name.trim().length > 120) next.name = "الاسم طويل جداً";
     const phone = form.guardian_phone.trim();
     if (phone && !/^[0-9+()\-\s]{4,25}$/.test(phone)) next.guardian_phone = "رقم الهاتف غير صالح";
+    const badDay = WEEKDAYS.find(({ day }) => {
+      const t = times[day];
+      return days.includes(day) && t?.from && t.to && t.to <= t.from;
+    });
+    setTimeError(badDay ? `وقت النهاية يجب أن يكون بعد وقت البداية (${badDay.label})` : "");
     setErrors(next);
-    return Object.keys(next).length === 0;
+    return Object.keys(next).length === 0 && !badDay;
   }
 
   async function onSubmit(e: FormEvent) {
@@ -68,6 +77,12 @@ export function StudentFormDialog({ open, onOpenChange, student }: Props) {
       guardian_phone: clean(form.guardian_phone),
       notes: clean(form.notes),
       lesson_days: days,
+      // Keep only times of selected days that have a value.
+      lesson_times: Object.fromEntries(
+        days
+          .map((d) => [String(d), { from: times[d]?.from || null, to: times[d]?.to || null }] as const)
+          .filter(([, t]) => t.from || t.to),
+      ),
     };
     const saved = await save
       .mutateAsync({ id: student?.id, values, subjectId: student ? undefined : form.subjectId || undefined })
@@ -75,6 +90,18 @@ export function StudentFormDialog({ open, onOpenChange, student }: Props) {
     if (!saved) return;
     onOpenChange(false);
     if (!student) navigate(`/students/${saved.id}`);
+  }
+
+  function toggleDay(day: number, on: boolean) {
+    if (on) return setDays((d) => d.filter((x) => x !== day));
+    setDays((d) => [...d, day]);
+    // A newly picked day starts with the time of the last day that has one.
+    const last = [...days].reverse().map((d) => times[d]).find((t) => t?.from || t?.to);
+    if (last && !times[day]?.from && !times[day]?.to) setTimes((t) => ({ ...t, [day]: { ...last } }));
+  }
+
+  function setTime(day: number, key: keyof LessonTime, value: string) {
+    setTimes((t) => ({ ...t, [day]: { from: t[day]?.from ?? null, to: t[day]?.to ?? null, [key]: value || null } }));
   }
 
   // Keep a grade that was removed from settings visible while editing.
@@ -157,7 +184,7 @@ export function StudentFormDialog({ open, onOpenChange, student }: Props) {
                   key={day}
                   type="button"
                   aria-pressed={on}
-                  onClick={() => setDays((d) => (on ? d.filter((x) => x !== day) : [...d, day]))}
+                  onClick={() => toggleDay(day, on)}
                   className={cn(
                     "h-10 rounded-xl px-3.5 text-sm font-medium ring-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                     on ? "bg-primary text-white ring-primary" : "bg-card text-ink ring-edge hover:bg-sage",
@@ -169,11 +196,47 @@ export function StudentFormDialog({ open, onOpenChange, student }: Props) {
             })}
           </div>
           <p className="mt-1.5 text-xs text-muted">الأيام التي تعطيه فيها درساً خصوصياً، ليظهر في جدول ذلك اليوم.</p>
+
+          {days.length > 0 && (
+            <div className="mt-3 space-y-2 rounded-2xl bg-mist p-3 ring-1 ring-mist-ring">
+              <div className="flex items-center gap-1.5 text-xs font-medium text-mist-deep">
+                <Clock className="size-3.5" />
+                وقت الدرس (اختياري)
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-xs text-muted sm:grid-cols-[4.5rem_1fr_1fr]" aria-hidden>
+                <span className="hidden sm:block" />
+                <span className="text-center">من</span>
+                <span className="text-center">إلى</span>
+              </div>
+              {WEEKDAYS.filter(({ day }) => days.includes(day)).map(({ day, label }) => (
+                <div key={day} className="grid grid-cols-2 items-center gap-x-2 gap-y-1 sm:grid-cols-[4.5rem_1fr_1fr]">
+                  <span className="col-span-2 text-sm font-semibold text-ink sm:col-span-1">{label}</span>
+                  <TimeInput label={`من - ${label}`} value={times[day]?.from ?? ""} onChange={(v) => setTime(day, "from", v)} />
+                  <TimeInput label={`إلى - ${label}`} value={times[day]?.to ?? ""} onChange={(v) => setTime(day, "to", v)} />
+                </div>
+              ))}
+              {timeError && <p className="text-xs font-medium text-danger">{timeError}</p>}
+            </div>
+          )}
         </fieldset>
         <Field label="ملاحظات عامة" htmlFor="s-notes" className="sm:col-span-2">
           <Textarea id="s-notes" value={form.notes} onChange={set("notes")} placeholder="أي ملاحظات تخص الطالب..." />
         </Field>
       </form>
     </Dialog>
+  );
+}
+
+/** Native time field: opens the phone's own hour/minute wheel or clock, minutes included. */
+function TimeInput({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
+  return (
+    <Input
+      type="time"
+      dir="ltr"
+      aria-label={label}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="min-w-0 cursor-pointer px-2 text-center tabular-nums [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-60 dark:[&::-webkit-calendar-picker-indicator]:invert"
+    />
   );
 }

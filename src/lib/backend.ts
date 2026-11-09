@@ -5,7 +5,7 @@ import type { Grade, LessonWithRefs, Student, StudentSubject, StudentSubjectWith
 /** Demo mode runs entirely in the browser with sample data (no Supabase needed). */
 export const isDemoMode = !isSupabaseConfigured || import.meta.env.VITE_DEMO_MODE === "true";
 
-export type StudentInput = Pick<Student, "name" | "grade" | "address" | "guardian_phone" | "notes" | "lesson_days">;
+export type StudentInput = Pick<Student, "name" | "grade" | "address" | "guardian_phone" | "notes" | "lesson_days" | "lesson_times">;
 export type ProgressInput = Pick<StudentSubject, "current_chapter" | "last_completed_topic" | "next_topic" | "progress_notes">;
 export type LessonInput = Pick<
   Lesson,

@@ -6,7 +6,7 @@
 import type { Backend, LessonFilters, LessonInput, ProgressInput, StudentInput } from "./backend";
 import type { Grade, Lesson, LessonWithRefs, Student, StudentSubject, StudentSubjectWithRefs, Subject } from "./types";
 
-const STORAGE_KEY = "tutorflow-demo-v3";
+const STORAGE_KEY = "tutorflow-demo-v4";
 
 interface Store {
   students: Student[];
@@ -105,6 +105,14 @@ function uid() {
   return crypto.randomUUID();
 }
 
+const SLOTS = [
+  { from: "16:00", to: "17:30" },
+  { from: "14:30", to: "16:00" },
+  { from: "18:00", to: "19:00" },
+  { from: "17:00", to: "18:30" },
+  { from: "15:00", to: "16:00" },
+];
+
 function seed(): Store {
   const grades: Grade[] = GRADES.map((name, i) => ({ id: uid(), name, sort_order: i + 1 }));
   const subjects: Subject[] = SUBJECTS.map((name, i) => ({ id: uid(), name, is_default: i === 0, created_at: tsDaysAgo(90, i) }));
@@ -135,6 +143,7 @@ function seed(): Store {
       guardian_phone: p.phone,
       notes: p.notes,
       lesson_days: p.days,
+      lesson_times: Object.fromEntries(p.days.map((d) => [d, SLOTS[people.indexOf(p) % SLOTS.length]])),
       created_at: tsDaysAgo(p.added, 12),
       updated_at: tsDaysAgo(p.added, 12),
     };
@@ -255,6 +264,8 @@ function refreshProgress(s: Store, ssId: string, touch = true) {
 function checkStudent(v: StudentInput) {
   if (!v.name.trim() || v.name.length > 120) throw new DbError("23514", "invalid name");
   if (v.guardian_phone && !/^[0-9+()\-\s]{4,25}$/.test(v.guardian_phone)) throw new DbError("23514", "invalid phone");
+  for (const t of Object.values(v.lesson_times))
+    if (t.from && t.to && t.to <= t.from) throw new DbError("23514", "invalid time");
   if (v.lesson_days.some((d) => !Number.isInteger(d) || d < 0 || d > 6)) throw new DbError("23514", "invalid day");
 }
 

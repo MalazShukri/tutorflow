@@ -49,6 +49,8 @@ create table public.students (
   notes           text check (notes is null or length(notes) <= 2000),
   -- Weekdays with a private lesson: 0 = Sunday … 6 = Saturday.
   lesson_days     smallint[] not null default '{}' check (lesson_days <@ array[0,1,2,3,4,5,6]::smallint[]),
+  -- Optional time per lesson day: {"1": {"from": "16:00", "to": "17:30"}, ...}
+  lesson_times    jsonb not null default '{}' check (jsonb_typeof(lesson_times) = 'object'),
   created_at      timestamptz not null default now(),
   updated_at      timestamptz not null default now()
 );

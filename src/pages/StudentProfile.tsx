@@ -23,7 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/dialog";
 import { Avatar, EmptyState, ErrorState, Skeleton } from "@/components/ui/misc";
-import { cn, formatDays } from "@/lib/utils";
+import { WEEKDAYS, cn, formatTimeRange } from "@/lib/utils";
 import { useDeleteStudent, useLessons, useStudent, useStudentSubjects } from "@/lib/api";
 
 export default function StudentProfilePage() {
@@ -102,7 +102,16 @@ export default function StudentProfilePage() {
           <Info icon={<GraduationCap />} label="الصف" value={s.grade} />
           <Info icon={<Phone />} label="رقم الهاتف" value={s.guardian_phone} ltr />
           <Info icon={<MapPin />} label="العنوان" value={s.address} />
-          <Info icon={<CalendarDays />} label="أيام الدروس" value={formatDays(s.lesson_days ?? []) || null} wide />
+          <Info icon={<CalendarDays />} label="أيام الدروس" value={
+              WEEKDAYS.filter(({ day }) => s.lesson_days?.includes(day))
+                .map(({ day, label }) => {
+                  const time = formatTimeRange(s.lesson_times?.[day]);
+                  return time ? `${label}: ${time}` : label;
+                })
+                .join("\n") || null
+            }
+            wide
+          />
           {s.notes && <Info icon={<StickyNote />} label="ملاحظات عامة" value={s.notes} note />}
         </div>
       </Section>

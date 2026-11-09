@@ -11,6 +11,11 @@ export interface Subject {
   created_at: string;
 }
 
+export interface LessonTime {
+  from: string | null;
+  to: string | null;
+}
+
 export interface Student {
   id: string;
   name: string;
@@ -20,6 +25,8 @@ export interface Student {
   notes: string | null;
   /** Weekdays with a private lesson, JS numbering: 0 = Sunday … 6 = Saturday. */
   lesson_days: number[];
+  /** Optional lesson time per day, keyed by the day number ("HH:MM", 24h). */
+  lesson_times: Record<string, LessonTime>;
   created_at: string;
   updated_at: string;
 }
