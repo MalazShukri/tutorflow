@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Clock, UserPlus, UserPen } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Dialog } from "@/components/ui/dialog";
@@ -227,18 +227,42 @@ export function StudentFormDialog({ open, onOpenChange, student }: Props) {
   );
 }
 
-/** Native time field: opens the phone's own hour/minute wheel or clock, minutes included. */
+/**
+ * Native time field: type the hour and minute, or tap anywhere / the clock button to open
+ * the browser's picker (the phone's own hour/minute wheel or clock).
+ */
 function TimeInput({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
+  const ref = useRef<HTMLInputElement>(null);
+  const openPicker = () => {
+    try {
+      ref.current?.showPicker?.();
+    } catch {
+      /* not supported or not allowed: typing still works */
+    }
+  };
   return (
-    <Input
-      type="time"
-      step={60}
-      dir="ltr"
-      aria-label={label}
-      // Hours and minutes only: a value with seconds would make the browser show a seconds field.
-      value={value.slice(0, 5)}
-      onChange={(e) => onChange(e.target.value.slice(0, 5))}
-      className="min-w-0 cursor-pointer px-2 text-center tabular-nums [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-60 dark:[&::-webkit-calendar-picker-indicator]:invert"
-    />
+    <div className="relative" dir="ltr">
+      <Input
+        ref={ref}
+        type="time"
+        step={60}
+        aria-label={label}
+        // Hours and minutes only.
+        value={value.slice(0, 5)}
+        onChange={(e) => onChange(e.target.value.slice(0, 5))}
+        onClick={openPicker}
+        className="min-w-0 cursor-pointer pe-11 ps-3 tabular-nums [&::-webkit-calendar-picker-indicator]:hidden"
+      />
+      <button
+        type="button"
+        onClick={openPicker}
+        aria-label={`اختيار الوقت: ${label}`}
+        title="اختيار الوقت"
+        tabIndex={-1}
+        className="absolute end-1.5 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-lg bg-sage text-primary transition-colors hover:bg-primary hover:text-white"
+      >
+        <Clock className="size-4" />
+      </button>
+    </div>
   );
 }
